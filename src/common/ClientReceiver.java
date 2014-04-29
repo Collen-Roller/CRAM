@@ -59,7 +59,8 @@ public class ClientReceiver extends Thread {
     	  //When you send a message send ROOM:NAME:MESSAGE
     	  System.out.println(formattedResponse);
     	  System.out.print("> ");
-
+    	  Chat.playSound("Chat 3.wav");
+    	  
       }
       
     }catch (Exception e ){

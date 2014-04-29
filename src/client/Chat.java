@@ -1,5 +1,6 @@
 package client;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.DatagramSocket;
@@ -15,6 +16,13 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.DataLine;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
 
 import common.Client;
 import common.ClientReceiver;
@@ -122,6 +130,29 @@ public class Chat {
 	public static void main(String[] args) throws IOException, InterruptedException {	
 		Chat c = new Chat(args);
 		c.run();	
+	}
+	
+	/**
+	 * Plays sounds!!!!
+	 * 
+	 * @param url
+	 * @throws UnsupportedAudioFileException
+	 * @throws IOException
+	 * @throws LineUnavailableException
+	 * @throws InterruptedException
+	 */
+	public static synchronized void playSound(final String url) throws UnsupportedAudioFileException, IOException, LineUnavailableException, InterruptedException {
+		File soundFile = new File("../res/" + url);
+	    AudioInputStream sound = AudioSystem.getAudioInputStream(soundFile);
+
+	    // load the sound into memory (a Clip)
+	    DataLine.Info info = new DataLine.Info(Clip.class, sound.getFormat());
+	    Clip clip = (Clip) AudioSystem.getLine(info);
+	    clip.open(sound);
+	    
+	    clip.start();
+	    Thread.sleep(2000);
+	    clip.close();
 	}
 	
 	/**

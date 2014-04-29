@@ -119,6 +119,7 @@ public class ServerReceiver extends Thread {
 		    	 
 				 while(serverIn.hasNextLine()){
 					 parseCommandFromServer(serverIn.nextLine());
+					 Chat.playSound("Chat 2.wav");
 		    	 }
 				 
 		      }
