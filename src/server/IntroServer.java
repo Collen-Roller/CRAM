@@ -25,6 +25,7 @@ public class IntroServer {
 	public final static String RRCMD_EXIT = "\\EXIT";
 	public final static String RRCMD_KILL = "\\KILL";
 	public final static String RRCMD_CLIENTS = "\\CLIENTS";
+	public static final String RRCMD_RENAME = "\\RENAME";
 	
 	public static Set<Room> rooms = Collections.synchronizedSet(new LinkedHashSet<Room>());
 	
@@ -68,12 +69,12 @@ public class IntroServer {
 	 * @param name - clients machine name
 	 * @param port - clients port
 	 */
-	public synchronized static void removeClientFromRoom(String room, String name, int port){
+	public synchronized static void removeClientFromRoom(String room, String s, int port){
 		Iterator<Room> itr = rooms.iterator();
 		while(itr.hasNext()){
 			Room r = itr.next();
 			if(r.getName().equals(room)){
-				r.removeClient(name, port);
+				r.removeClient(s, port);
 				deleteRoom(r);
 				return;
 			}
@@ -93,17 +94,17 @@ public class IntroServer {
 	 * @param room - room to add client to
 	 * @param client - client to be added to a specific room
 	 */
-	public synchronized static void addClientToRoom(String roomName, String name, int port){
+	public synchronized static void addClientToRoom(String roomName, String s, int port, String name){
 		Iterator<Room> itr = rooms.iterator();
 		while(itr.hasNext()){
 			Room r = itr.next();
 			if(r.getName().equals(roomName)){
-				r.addClient(name, port);
+				r.addClient(s, port, name);
 				return;
 			}
 		}
 		Room newRoom = new Room(roomName);
-		newRoom.addClient(name, port);
+		newRoom.addClient(s, port, name);
 		rooms.add(newRoom);
 		
 		

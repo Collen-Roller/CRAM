@@ -52,28 +52,7 @@ The Client (UDP)
 ----------------------------------------------------------------------------------------
 The Client attempts to connect to the server using a IPP, and is added to a room,
 (lobby, if other not specified in args) using a default port of 21212 or a 
-specific port specified in args. The following args can be used in this program
-
-|----------------------+-----------------------------------------------|
-| Parameter            | Meaning                                       |
-|----------------------+-----------------------------------------------|
-| --introduction <IPP> | REQUIRED The machine and port where the       |
-|                      | introduction server is listening.             |
-| --start_room <RM>    | The room to join initially. Default: lobby    |
-| --name <NM>          | The name to prepend to all outgoing messages. |
-|                      | Default: DarthVader                           |
-| --rooms              | Start session with a call to \rooms.          |
-|                      | Default: false                                |
-| --port <port>        | The local port number where this peer expects |
-|                      | chat communication. Default: 21212            |
-| --kill               | Send the \KILL message to the introduction    |
-|                      | server and terminate. Default: false          |
-|----------------------+-----------------------------------------------|
-
-The only required argument is --introduction <IPP> (To connect to the server)
-However, the usage of --port is highly recommended as only one person can be using
-the default port (21212). If this port is in useage already, then the client will
-not be able to connect to the server
+specific port specified in the IntroPanel
 
 //****************************TO RUN THE CLIENT (EXAMPLE)*****************************\\
 
@@ -81,13 +60,11 @@ To Run the client -
 
 1) compile the client from inside the src directory
 
-"javac client/Chat.java"
+"javac */*.java"
 
 2) Run the client with necessary arguments
 
-"java client/Chat --introduction <IPP> --port <port>
-						    |				|
-						 required		  optional
+"java client/ChatMain"
 						 
 ----------------------------------------------------------------------------------------
 
@@ -132,3 +109,5 @@ How Does the Client Connect to the Server?
 |----------------+---------------------------------------------------------|
 | \kill          | Send \KILL to the introduction server and terminate.    |
 |----------------+---------------------------------------------------------|
+
+---------------------------------------------------------------------------------------

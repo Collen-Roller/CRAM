@@ -1,5 +1,17 @@
 package client;
 
+
+import interfaces.GUIPanel;
+
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -23,6 +35,12 @@ import javax.sound.sampled.Clip;
 import javax.sound.sampled.DataLine;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
 
 import common.Client;
 import common.ClientReceiver;
@@ -44,18 +62,11 @@ import common.TypingToQueue;
  *
  */
 
-public class Chat {
+@SuppressWarnings("serial")
+public class Chat extends JPanel implements GUIPanel, Runnable{
 	
 	
-	/*
-	   * Commands to reach server and execute
-	   * \rooms
-	   * \join
-	   * \leave
-	   * \name
-	   * \quit
-	   * \kill
-	   */
+	//COMMANDS & DEFAULT INFO
 	public static final String CMD_ROOMS = "\\rooms";
 	public static final String CMD_JOIN = "\\join";
 	public static final String CMD_LEAVE = "\\leave";
@@ -70,21 +81,24 @@ public class Chat {
 	public static final String RRCMD_EXIT = "\\EXIT";
 	public static final String RRCMD_KILL = "\\KILL";
 	public static final String RRCMD_CLIENTS = "\\CLIENTS";
+	public static final String RRCMD_RENAME = "\\RENAME";
 	
-	public final static int DEFAULT_PORT = 21212;
-	public final static String DEFAULT_ROOM = "lobby";
-	public final static String DEFAULT_MACHINE_NAME = "localhost";
-	public final static String DEFAULT_NAME = "DarthVader";
+	//Default information
+	public static int DEFAULT_PORT = 21212;
+	public static String DEFAULT_ROOM = "lobby";
+	public static String DEFAULT_MACHINE_NAME = "localhost";
+	public static String DEFAULT_NAME = "DarthVader";
 	
-	public final static String rnRegex = "[_A-Za-z][_0-9A-Za-z]*";
+	//REGEX that Names & Rooms must abide by
+	public static String rnRegex = "[_A-Za-z][_0-9A-Za-z]*";
 	
 	//Command Line arguments
-	public final String ARG_INTRODUCTION_PORT = "--introduction";
-	public final String ARG_START_ROOM = "--start_room";
-	public final String ARG_NAME = "--name";
-	public final String ARG_ROOMS = "--rooms";
-	public final String ARG_LOCAL_PORT = "--port";
-	public final String ARG_KILL = "--kill";
+	public static final String ARG_INTRODUCTION_PORT = "--introduction";
+	public static final String ARG_START_ROOM = "--start_room";
+	public static final String ARG_NAME = "--name";
+	public static final String ARG_ROOMS = "--rooms";
+	public static final String ARG_LOCAL_PORT = "--port";
+	public static final String ARG_KILL = "--kill";
 	
 	//Default information
 	private static int localPort = DEFAULT_PORT;
@@ -93,55 +107,50 @@ public class Chat {
 	private static String machineName = DEFAULT_MACHINE_NAME;
 	private static String ipp;
 	private static InetAddress clientIP;
-	private InetAddress serverIP;
-	private int serverPort;
-	
+	private static InetAddress serverIP;
+	private static int serverPort;
+	         
+	//Communications
 	private static Socket serverSocket;
 	private static PrintStream serverOut;
 	private static Scanner serverIn;
-	private static DatagramSocket socket; //Communication socket
+	private static DatagramSocket socket;
 	
 	public static boolean command = false;
 	public static boolean message = false;
 	public static boolean doubleCommand = false;
 	public static boolean sendHello = false;
 	public static boolean sendGoodbye = false;
+	public static boolean sendRename = false;
 	public static boolean init = true;
-	
-	
+
 	//List of clients to connect to
 	public static Set<Client> listOfClients = new HashSet<Client>();
 	
 	//Message Queue
-	private static BlockingQueue<String> messageQueue;
-	private static BlockingQueue<String> serverCommandQueue;
+	private BlockingQueue<String> messageQueue;
+	private BlockingQueue<String> serverCommandQueue;
 	
-	public static boolean initSendToServerRoom = false;
-	public static boolean initSendToServerKill = false;
+	/////////////GUI FIELDS\\\\\\\\\\\\\\\\
+	private Image background;
+	 
+	public static boolean grabCommand;
+	
+	public static String text;
+	
+	private static JTextField inputArea = new JTextField();
+	private static JTextArea outputArea = new JTextArea(30,30);
+	private static JTextArea clientListArea = new JTextArea(30,30);
+	
+	private ActionListener a1;
+	private KeyAdapter a2;
+	
+	private JButton submit;
 	
 	
-	/**
-	 * Creates a new thread the will create a new client 
-	 * as well as invoke the run method
-	 * @param args
-	 * @throws IOException 
-	 * @throws InterruptedException 
-	 */
-	public static void main(String[] args) throws IOException, InterruptedException {	
-		Chat c = new Chat(args);
-		c.run();	
-	}
-	
-	/**
-	 * Plays sounds!!!!
-	 * 
-	 * @param url
-	 * @throws UnsupportedAudioFileException
-	 * @throws IOException
-	 * @throws LineUnavailableException
-	 * @throws InterruptedException
-	 */
-	public static synchronized void playSound(final String url) throws UnsupportedAudioFileException, IOException, LineUnavailableException, InterruptedException {
+	//SOUND METHOD
+	public synchronized static void playSound(final String url) 
+	throws UnsupportedAudioFileException, IOException, LineUnavailableException, InterruptedException {
 		File soundFile = new File("../res/" + url);
 	    AudioInputStream sound = AudioSystem.getAudioInputStream(soundFile);
 
@@ -151,85 +160,185 @@ public class Chat {
 	    clip.open(sound);
 	    
 	    clip.start();
-	    Thread.sleep(2000);
-	    clip.close();
 	}
 	
-	/**
-	 * This method sets up the command line arguments 
-	 * to fields up above. cleans up main method as well
-	 * 
-	 * @param args
-	 * @throws IOException 
-	 */
+	//*********************GUI CODE**********************\\
 	
-	public Chat(String [] args) throws IOException{
-		if(args.length < 2){
-			System.out.println("Invalid Number of Arguments");
-		    System.out.println("Program is exiting.....");
-		    printErrorMessageArgs();
-		    System.exit(1);
-		}
-		
-		int count = 0; //will keep track of arguments
-		
-		while(count < args.length) {
-			if(args[count].equals(ARG_INTRODUCTION_PORT)) {
-				//System.out.println("CHECK POINT INTRODUCTION");
-				count++;
-				if(checkIPP(args[count])){
-					String [] s = args[count].split(":");
-					setMachineToServerIP(s[0]);
-					serverPort = Integer.parseInt(s[1]);
-		 		}else{
-					System.out.println("IPP Does not contain a : re-run with correct args");
-					printErrorMessageArgs();
-					System.exit(1);
-				}
-			} else if(args[count].equals(ARG_START_ROOM)) {
-				count++;
-				//System.out.println("CHECK POINT START ROOM, Received Start Room of : " + args[count]);
-				if(checkRegex(args[count]))
-					setCurrentRoom(args[count]);
-			} else if(args[count].equals(ARG_NAME)){
-				count++;
-				//System.out.println("CHECK POINT NAME " + " Received Name : " + args[count]);
-				if(checkRegex(args[count]))
-					name = args[count];
-			} else if(args[count].equals(ARG_LOCAL_PORT)) {
-				count++;
-				//System.out.println("CHECK LOCAL PORT " + " Received new local port of " + args[count]);
-				localPort = Integer.parseInt(args[count]);
-			} else if(args[count].equals(ARG_ROOMS)){
-				initSendToServerRoom = true;
-			} else if(args[count].equals(ARG_KILL)){
-				initSendToServerKill = true;
-			}else {
-				System.out.println("Unknown parameter \"" + args[count] + "\"");
-				printErrorMessageArgs();
-		        System.exit(1);
+	//Basically a constructor to construct submit button / action listeners / ect..
+	public void guiSetUp(){
+		background = Toolkit.getDefaultToolkit().createImage(
+				"../res/Brushed Metal by Miatari (5).jpg");
+		setLayout(null);
+		submit = new JButton("SUBMIT");
+		submit.setLocation(435, 365);
+		submit.setSize(100,50);
+		submit.addActionListener(a1 = new ActionListener() {
+	
+			
+			public synchronized void actionPerformed(ActionEvent e) {
+				String s = inputArea.getText();
+				text = s;
+				inputArea.setText("");
+				grabCommand = true;
 			}
-			count++;
-		}
-		setIPP(machineName);
-		//All Arguments are accounted for!
+		});
+			
+		inputArea.addKeyListener(a2 = new KeyAdapter() {
+			
+			@Override
+	         public synchronized void keyPressed(KeyEvent e) {
+	           int key = e.getKeyCode();
+	           if (key == KeyEvent.VK_ENTER) {
+	        	   submit.doClick();   
+	              }
+	         	}
+	         }
+	      );
+		setLayout(null);
+		add(submit);
+		setTypingTextArea();
+		setOutputTextArea();
+		setClientList();
 	}
-	/**
-	 * Error message for Client to re run args
-	 * 
-	 */
-	public void printErrorMessageArgs(){
+	
+	//Sets input typing area
+	public void setTypingTextArea(){
+		JPanel consolePane = new JPanel();
+		consolePane.setSize(new Dimension(350, 100));
+		consolePane.setLocation(20,350);
+		consolePane.setLayout(null);
+		inputArea.setLocation(0, 0);
+		inputArea.setSize(new Dimension(350, 100));
+		inputArea.setForeground(Color.WHITE);
+		inputArea.setBackground(Color.DARK_GRAY.darker());
+		inputArea.setText("");
+		inputArea.setCaretColor(Color.WHITE);
+		consolePane.add(inputArea);
+		add(consolePane);
+	}
+	
+	//Sets the Output area on GUI
+	public void setOutputTextArea(){
+		JPanel consolePane = new JPanel();
+		consolePane.setSize(new Dimension(350, 300));
+		consolePane.setLocation(20,20);
+		consolePane.setLayout(null);
+		outputArea.setEditable(false);
+		outputArea.setLocation(0, 0);
+		outputArea.setSize(new Dimension(350, 300));
+		outputArea.setForeground(Color.WHITE);
+		outputArea.setBackground(Color.BLACK);
+		outputArea.setText("");
+		JScrollPane scrollPane = new JScrollPane(outputArea);
+		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		scrollPane.setBackground(Color.darkGray);
+		scrollPane.setForeground(Color.darkGray);
+		scrollPane.setLocation(0, 0);
+		scrollPane.setSize(new Dimension(350, 300));
+		scrollPane.setBorder(BorderFactory.createBevelBorder(10, Color.BLUE, Color.WHITE));
+		consolePane.add(scrollPane);
+		add(consolePane);
+	}
+	
+	//Sets the Buddy List on GUI
+	public void setClientList(){
+		JPanel consolePane = new JPanel();
+		consolePane.setSize(new Dimension(170, 300));
+		consolePane.setLocation(400,20);
+		consolePane.setLayout(null);
+		clientListArea.setEditable(false);
+		clientListArea.setLocation(0, 0);
+		clientListArea.setSize(new Dimension(170, 300));
+		clientListArea.setForeground(Color.WHITE);
+		clientListArea.setBackground(Color.BLACK);
+		clientListArea.setText("");
+		JScrollPane scrollPane = new JScrollPane(clientListArea);
+		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		scrollPane.setBackground(Color.darkGray);
+		scrollPane.setForeground(Color.darkGray);
+		scrollPane.setLocation(0, 0);
+		scrollPane.setSize(new Dimension(170, 300));
+		scrollPane.setBorder(BorderFactory.createBevelBorder(5, Color.BLUE.darker().darker(), Color.WHITE));
+		consolePane.add(scrollPane);
+		add(consolePane);
+	}
+	
+	public static String getInputLines() {
+		grabCommand = false;
+		return text;
+	}
+	
+	public static void setOutputLine(String line){
+		//clear the area if there are too many lines
+		if(outputArea.getLineCount() > 100){
+			outputArea.setText("");
+		}
+		for(int i=0; i<line.length(); i += 45){
+			if(line.length() > i+45){
+				outputArea.append(line.substring(i,i+45) + "\n");
+			}else{
+				outputArea.append(line.substring(i) + "\n");
+			}
+		}
+	}
+	
+	public static void setClientsOnListArea(){
+		clientListArea.setText("");
+		clientListArea.append("Room : " + getCurrentRoom() + "\n");
+		clientListArea.append("\n" + "Buddies" + "\n");
+		for(Client c : listOfClients){
+			clientListArea.append(c.getName() + "\n");
+		}
+	}
+	@Override
+	public void paintComponent(Graphics g) {
+		g.drawImage(background, 0, 0, 600, 500, this);
+	}
+
+	@Override
+	public void update() {
 		
-		System.out.println("\n           To Run this server and change arguments...");
-		System.out.println("--introduction <IPP> | REQUIRED The machine and port where server is listening");
-		System.out.println("--start_room <RM>    | The room to join initially. Default: lobby");
-		System.out.println("--name <NM>          | The name to prepend to all outgoing messages.");
-		System.out.println("                     | Default: DarthVader");
-		System.out.println("--rooms              | Start session with a call to \rooms.");
-		System.out.println("--port <port>        | The local port number where this peer expects");
-		System.out.println("                     | chat communication. Default: 21212");
-		System.out.println("--kill               | Send the \\KILL message to the introduction");
-		System.out.println("                     | server and terminate. Default: false  ");
+	}
+
+	@Override
+	public void kill() {
+		submit.removeActionListener(a1);
+		a1 = null;
+		inputArea.removeKeyListener(a2);
+		a2 = null;
+	}
+	
+	//*********************END OF GUI CODE*********************\\
+
+	
+	//*********************START OF CHAT CODE*******************\\
+	
+	/**
+	 * Constructor, sets up Chat object, and GUI 
+	 * Invokes the run method which makes the Receiver's & Sender
+	 * 
+	 * @param s
+	 * @param port
+	 * @param name
+	 * @param room
+	 * @throws IOException
+	 * @throws InterruptedException
+	 */
+	public Chat(String s, int port, String name, String room) throws IOException, InterruptedException{
+		Chat.setLocalPort(port);
+		String [] temp = s.split(":");
+		Chat.setMachineToServerIP(temp[0]);
+		serverPort = Integer.parseInt(temp[1]);
+		Chat.setClientName(name);
+		Chat.setCurrentRoom(room);
+		Chat.setIPP(machineName);
+		guiSetUp();
+		
+		Thread t = new Thread(this);
+		t.start();
+		//Set up the gui
 	}
 	
 	/**
@@ -270,7 +379,7 @@ public class Chat {
 	 * 
 	 * @param s
 	 */
-	public void setMachineToServerIP(String s){
+	public static void setMachineToServerIP(String s){
 		try {
 			serverIP = InetAddress.getByName(s);
 		} catch (UnknownHostException e) {
@@ -282,16 +391,22 @@ public class Chat {
 	 * Set IPP for this
 	 * @param s
 	 */
-	public void setIPP(String s){
+	public static void setIPP(String s){
 		try{
 			clientIP = InetAddress.getLocalHost();
-			ipp =  clientIP.getHostAddress() + ":" + Chat.getLocalPort();
+			ipp =  clientIP.getHostAddress() + ":" + getLocalPort();
 			
 		}catch (Exception e){
 			System.out.println("Could not set client IPP");
 		}
 	}
 	
+	/**
+	 * Removes a client from the list that maps to 
+	 * 
+	 * @param s IP
+	 * @param n port
+	 */
 	public synchronized static void removeClient(String s, int n){
 		Iterator<Client> itr = listOfClients.iterator();
 		while(itr.hasNext()){
@@ -312,10 +427,9 @@ public class Chat {
 	}
 	
 	/**
-	 * closes the connections to the server and kills the thread
+	 * Closes the connections to the server and kills the thread
 	 * 
 	 */
-	//Closes connection for Server
 	public static void closeServerConnections(){
 		try {
 			serverOut.close();
@@ -328,12 +442,26 @@ public class Chat {
 	}
 	
 	/**
+	 * Gets the client object
 	 * 
-	 * This set of methods is to reset or change the various 
-	 * flags used in this program
-	 * {resetHello(),resetGoodbye(),command(),message(),resetCM()}
-	 * 
+	 * @param s - IP
+	 * @param n - port
+	 * @return Client Object associated with s & n
 	 */
+	public static Client getClient(String s, int n) {
+		String ipp = s + ":" + n;
+		Iterator<Client> itr = listOfClients.iterator();
+		while(itr.hasNext()){
+			Client c = itr.next();
+			if(c.getIPP().equals(ipp)){
+				return c;
+			}
+		}
+		return null;
+		
+	}
+	
+	//**********FLAGS FOR THEADS TO SEND / RECEIVE***************\\
 	public synchronized static void resetHello(){
 		sendHello = false;
 	}
@@ -342,84 +470,60 @@ public class Chat {
 		sendGoodbye = false;
 	}
 	
+	public synchronized static void resetRename(){
+		sendRename = false;
+	}
+	
 	public static void command(){
-		Chat.command = true;
-		Chat.message = false;
+		command = true;
+		message = false;
 	}
 	public static void doubleCommand(){
-		Chat.doubleCommand = true;
+		doubleCommand = true;
 		command();
 	}
 	
 	public static void message(){
-		Chat.message = true;
-		Chat.command = false;
+		message = true;
+		command = false;
 	}
 	
 	public static void resetCM(){
-		Chat.message = false;
-		Chat.command = false;
+		message = false;
+		command = false;
 	}
 	public static void resetDCM(){
-		Chat.doubleCommand = false;
+		doubleCommand = false;
 	}
 	
 	
-	/**
-	 * sets clients name to name
-	 * 
-	 * @param name to change to
-	 */
-	public static void setName(String name){
+	//*************SETTERS AND GETTERS****************\\
+	public static void setClientName(String name){
 		Chat.name = name;
 		
 	}
-	
-	/**
-	 * @return machine name
-	 */
+	private static void setLocalPort(int port){
+		localPort = port;
+	}
+	public static void setCurrentRoom(String room) {
+		currentRoom = room;
+	}
+	//Getters for Chat
 	public static String getMachineName(){
 		return machineName;
 	}
-	
-	/**
-	 * 
-	 * @return name of client
-	 */
-	public static String getName(){
+	public static String getClientName(){
 		return name;
 	}
-	
-	/**
-	 * 
-	 * @return local port
-	 */
-	public static int getLocalPort(){
+	private static int getLocalPort(){
 		return localPort;
 	}
-	
-	/**
-	 * 
-	 * @return current room
-	 */
 	public static String getCurrentRoom() {
 		return currentRoom;
 	}
 
-	/**
-	 *
-	 * @return IPP
-	 */
 	public static String getIPP(){
 		return ipp;
-	}
-	
-	/**
-	 * changes current room to room
-	 * @param room to change current room to
-	 */
-	public static void setCurrentRoom(String room) {
-		Chat.currentRoom = room;
 	}
 
 	
@@ -430,18 +534,18 @@ public class Chat {
 	 * Sender - Thread to send messages to the clients and the server
 	 * @throws InterruptedException 
 	 */
-	public void run() throws InterruptedException {
+	@Override
+	public void run() {
 		
 		// Linked List implementation of a queue for
 		// messages
-		
 		messageQueue = new LinkedBlockingQueue<String>();
 		serverCommandQueue = new LinkedBlockingQueue<String>();
 		
 
 		try {
 			// Reads keyboard information and places it into queue
-			TypingToQueue keyboard = new TypingToQueue(System.in, messageQueue, serverCommandQueue);
+			TypingToQueue keyboard = new TypingToQueue(messageQueue, serverCommandQueue);
 			keyboard.start();
 			
 			// Start reader thread
@@ -457,9 +561,15 @@ public class Chat {
 			
 			ClientReceiver cr = new ClientReceiver(socket);
 			ServerReceiver sr = new ServerReceiver(serverSocket, serverIn);
-			Sender sender = new Sender(socket, serverSocket, serverOut, messageQueue, serverCommandQueue);
-			
-			sender.start();
+			Sender sender;
+			try {
+				sender = new Sender(socket, serverSocket, serverOut, messageQueue, serverCommandQueue);
+				sender.start();
+			} catch (InterruptedException e) {
+				System.out.println("Can't invoke sender thread....re-run");
+				System.out.println("If no luck... then contact me");
+			}
+
 			cr.start();
 			sr.start();
 
@@ -469,6 +579,8 @@ public class Chat {
 			System.exit(2);
 		}
 	}
+	
+	//*********END OF CHAT CODE**********\\
 }
 
 

@@ -47,7 +47,7 @@ public class ServerThread extends Thread {
 	 */
 	public void parseServerCommand(String s, PrintStream pout) throws SocketException {
 		String [] line = s.split("\\s+");
-		
+		System.out.println(s);
 		//Kills the Server
 		if(line[0].equals(IntroServer.RRCMD_KILL)){
 			pout.println(IntroServer.RRCMD_KILL);
@@ -63,6 +63,14 @@ public class ServerThread extends Thread {
 			IntroServer.removeClientFromRoom(room,ipp[0],Integer.parseInt(ipp[1]));
 			pout.println(IntroServer.RRCMD_EXIT + " " + line[1]);
 
+		}
+		
+		else if(line[0].equals(IntroServer.RRCMD_RENAME)){
+			String room = line[1];
+			String [] client = line[2].split(":");
+			String newName = line[3];
+			IntroServer.getRoom(room).getClient(client[0],Integer.parseInt(client[1])).setName(newName);
+			pout.println(IntroServer.RRCMD_RENAME + " " + client[2] + " " + line[3]);
 		}
 
 		//Sends a list of Clients in a <RM> to the client
@@ -93,7 +101,7 @@ public class ServerThread extends Thread {
 			String room = line[1];
 			String [] ipp = line[2].split(":");
 			String joinResult = IntroServer.RRCMD_JOIN + " " + room;
-			IntroServer.addClientToRoom(room,ipp[0],Integer.parseInt(ipp[1]));
+			IntroServer.addClientToRoom(room,ipp[0],Integer.parseInt(ipp[1]),ipp[2]);
 			Room r = IntroServer.getRoom(room);
 			if(r != null){
 				joinResult += " " + r.getClientsToString();

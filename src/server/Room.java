@@ -41,7 +41,7 @@ public class Room {
 		Iterator<Client> itr = clients.iterator();
 		while(itr.hasNext()){
 			Client c = itr.next();
-			result += c.getIPP() + " ";
+			result += c.getIPP()+ ":" + c.getName() + " ";
 		}
 		return result;
 	}
@@ -52,8 +52,8 @@ public class Room {
 	 * @param s
 	 * @param n
 	 */
-	public void addClient(String s, int n) {
-		clients.add(new Client(s,n));
+	public void addClient(String s, int n, String name) {
+		clients.add(new Client(s,n,name));
 	}
 	
 	/**
@@ -80,6 +80,18 @@ public class Room {
 	 */
 	public String getName(){
 		return name;
+	}
+
+	public Client getClient(String s, int n) {
+		String ipp = s + ":" + n;
+		Iterator<Client> itr = clients.iterator();
+		while(itr.hasNext()){
+			Client c = itr.next();
+			if(c.getIPP().equals(ipp)){
+				return c;
+			}
+		}
+		return null;
 	}
 	
 }

@@ -1,5 +1,6 @@
 package common;
 
+
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 
@@ -34,11 +35,20 @@ public class ClientReceiver extends Thread {
     	  DatagramPacket packet = new DatagramPacket(receiveData,
     				  receiveData.length);
     	  socket.receive(packet);
+    	 
+    	  /*
     	  Client cc = new Client(packet.getAddress().getHostName(),packet.getPort());
     	  if(!findClient(cc)){
     		  Chat.listOfClients.add(cc);
     	  }
+    	  */
     	  String [] response = new String(packet.getData(), 0, packet.getLength()).split(":");
+    	  
+    	  Client cc = new Client(packet.getAddress().getHostName(),packet.getPort(),response[1]);
+    	  if(!findClient(cc)){
+    		  Chat.listOfClients.add(cc);
+    	  }
+    	  
     	  String formattedResponse = ""; 
     	  for(int i=0; i<response.length; i++){
     		  if(i == 0){
@@ -47,8 +57,13 @@ public class ClientReceiver extends Thread {
     			  formattedResponse += " " + response[1] + " ";
     		  }else if(i == 2){
     			  if(response[2].equals("GOODBYE")){
+    				  //remove the client from the buddy list
+    				  System.out.println(response[1]);
     				  Chat.removeClient(packet.getAddress().getHostAddress(), packet.getPort());
-    			  }
+    			  }else if(response[2].equals("RENAME")){
+    				  Chat.getClient(packet.getAddress().getHostAddress(), packet.getPort()).setName(response[1]);
+    			  } 
+    			  Chat.setClientsOnListArea();
     			  formattedResponse += "- " + response[2];
     		  }else{ 
     			  formattedResponse += ":" + response[i];
@@ -58,6 +73,7 @@ public class ClientReceiver extends Thread {
     	  
     	  //When you send a message send ROOM:NAME:MESSAGE
     	  System.out.println(formattedResponse);
+    	  Chat.setOutputLine(formattedResponse);
     	  System.out.print("> ");
     	  Chat.playSound("Chat 3.wav");
     	  

@@ -1,6 +1,7 @@
 package common;
 
 
+
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.DatagramPacket;
@@ -36,11 +37,12 @@ public class Sender extends Thread {
     try {
 		serverOut = new PrintStream(serverSocket.getOutputStream());
 		sendCommandToServer(Chat.CMD_JOIN + " " + Chat.getCurrentRoom());
-		if(Chat.initSendToServerRoom){
+		/*if(Chat.initSendToServerRoom){
 			sendCommandToServer(Chat.CMD_ROOMS);
 		}if(Chat.initSendToServerKill){
 			sendCommandToServer(Chat.RRCMD_KILL);
 		}
+		*/
 	} catch (IOException e) {
 		System.out.println("Can't Set OutPutStream with serverSocket");
 	}
@@ -71,18 +73,33 @@ public class Sender extends Thread {
 		//JOIN
 		else if(line[0].equals(Chat.CMD_JOIN) && line.length > 1){
 			if(Chat.checkRegex(line[1])){
-				String info = Chat.RRCMD_JOIN + " " + line[1] + " " + Chat.getIPP();
+				//String info = Chat.RRCMD_JOIN + " " + line[1] + " " + Chat.getIPP();
+				//***********NEW STUFF
+				String info = Chat.RRCMD_JOIN + " " + line[1] + " " + Chat.getIPP()+":"+Chat.getClientName();
+				//***********
 				serverOut.println(info);
 			}else{
+				Chat.setOutputLine("Invalid room name, " + line[1] + " Could not process request... ");
 				System.out.println("Invalid room name, " + line[1] + " Could not process request... ");
 			}
 		}
 		
 		//LEAVE
 		else if(line[0].equals((Chat.CMD_LEAVE)) && line.length > 1){
-			String info = line[1] + " " + Chat.getIPP(); 
+			String info = line[1] + " " + Chat.getIPP();
 			serverOut.println(Chat.RRCMD_EXIT + " " + info);
 			
+		}
+		
+		//NAME
+		else if(line[0].equals((Chat.CMD_NAME)) && line.length > 1){
+			if(Chat.checkRegex(line[1])){
+				String info = Chat.getCurrentRoom() + " " + Chat.getIPP() + ":" + Chat.getClientName() + " " + line[1];
+				serverOut.println(Chat.RRCMD_RENAME + " " + info);
+			}else{
+				Chat.setOutputLine("Could not change name from " + Chat.getClientName() + " to " + line[1]);
+				System.out.println("Could not change name from " + Chat.getClientName() + " to " + line[1]);
+			}
 		}
 		
 		
@@ -102,7 +119,9 @@ public class Sender extends Thread {
 		
 		//Unknown Server Command
 		else{
+			Chat.setOutputLine("Unknown Command");
 			System.out.println("unknown command");
+			
 		}	
 		serverOut.flush();
 	}
@@ -115,13 +134,13 @@ public class Sender extends Thread {
    */
   public synchronized void sendMessageToClients(String message){
 	//Sends Messages to Clients
-	  String info = Chat.getCurrentRoom() + ":" + Chat.getName() + ":" + message;
+	  String info = Chat.getCurrentRoom() + ":" + Chat.getClientName() + ":" + message;
 	  sendData = info.getBytes();
 	  Iterator<Client> itr = Chat.listOfClients.iterator();
 	  while(itr.hasNext()){
 		  Client c = itr.next();
-		  if(c.getIPP().equals(Chat.getIPP()))
-			  continue;
+		  //if(c.getIPP().equals(Chat.getIPP()))
+		  //continue;
 		  DatagramPacket packet = new DatagramPacket(sendData,
 				  sendData.length, c.getInetAddress(), c.getPort());
 		  try {
@@ -142,8 +161,13 @@ public class Sender extends Thread {
     	  if(Chat.sendHello){
     		  sendMessageToClients("HELLO I AM YOUR LEADER");
     		  Chat.resetHello();
-    		  //Chat.resetGoodbye();
     	  }
+    	  
+    	  else if(Chat.sendRename){
+    		  sendMessageToClients("RENAME");
+    		  Chat.resetRename();
+    	  }
+    	  
     	  //Flag so that when a client leaves a room, the other clients wont receive
     	  //Messages from them anymore
     	  else if(Chat.sendGoodbye){

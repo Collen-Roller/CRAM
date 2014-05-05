@@ -18,17 +18,13 @@ public class Client implements Comparable<Client> {
 	private InetAddress ina;
 	private String machineName;
 	private int port;
+	private String name;
 	
-	public Client(String machineName, int port){
+	public Client(String machineName, int port, String name){
 		this.machineName = machineName;
 		this.port = port;
+		this.name = name;
 		setInetAddress();
-	}
-	
-	public Client(InetAddress address, int port2) {
-		this.machineName = address.getHostAddress();
-		this.port = port2;
-		this.ina = address;
 	}
 
 	//Setter for InetAddress among construction
@@ -53,6 +49,16 @@ public class Client implements Comparable<Client> {
 	//Getter for port # of client
 	public int getPort(){
 		return port;
+	}
+	
+	//Setter for Name
+	public void setName(String s){
+		this.name = s;
+	}
+	
+	//Getter for Name
+	public String getName(){
+		return name;
 	}
 	
 	//Getter for inet address of client

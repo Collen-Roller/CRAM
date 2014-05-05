@@ -1,5 +1,6 @@
 package common;
 
+
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Scanner;
@@ -30,6 +31,7 @@ public class ServerReceiver extends Thread {
 		
 	public void parseCommandFromServer(String reply) throws InterruptedException{
 		String line [] = reply.split("\\s+");
+		Chat.setOutputLine(reply);
 		//Kills the Server
 		if(line[0].equals(Chat.RRCMD_KILL)){
 			//Send a message to everyone that server is killed
@@ -37,9 +39,11 @@ public class ServerReceiver extends Thread {
 				serverIn.close();
 				serverSocket.close();
 				System.out.println(Chat.RRCMD_KILL);
+				Chat.setOutputLine(Chat.RRCMD_KILL);
 				Chat.closeServerConnections();
 			}catch (IOException e) {
 				System.out.println("Could not close server connections");
+				Chat.setOutputLine("Could not close server connections");
 			}
 		}
 		
@@ -50,6 +54,7 @@ public class ServerReceiver extends Thread {
 				clients += line[i] + " "; 
 			}
 			System.out.println("Reply from server : " + Chat.RRCMD_CLIENTS + " " + clients);
+			Chat.setOutputLine("Reply from server : " + Chat.RRCMD_CLIENTS + " " + clients);
 		}
 		
 		//Exits the Room
@@ -59,7 +64,20 @@ public class ServerReceiver extends Thread {
 			Chat.sendGoodbye = true;
 			Thread.sleep(time); //Sleep to allow the Goodbye to be sent 
 			System.out.println("Reply from server : " + Chat.RRCMD_EXIT + " " + room);
-			
+			Chat.setOutputLine("Reply from server : " + Chat.RRCMD_EXIT + " " + room);
+			Chat.setClientsOnListArea();
+		}
+		
+		else if(line[0].equals(Chat.RRCMD_RENAME)){
+			long time = 100;
+			String oldName = line[1];
+			String newName = line[2];
+			Chat.setClientName(newName);
+			Chat.setClientsOnListArea();
+			Chat.sendRename = true;
+			Thread.sleep(time);
+			System.out.println("Reply from server : " + Chat.RRCMD_RENAME+ " " + oldName + " to " + newName);
+			Chat.setOutputLine("Reply from server : " + Chat.RRCMD_RENAME + " "  + oldName + " to " + newName);
 		}
 		
 		//Print out the list of rooms
@@ -69,6 +87,7 @@ public class ServerReceiver extends Thread {
 				rooms += line[i] + " ";
 			}
 			System.out.println("Reply from server : " + Chat.RRCMD_ROOMS + " " + rooms);
+			Chat.setOutputLine("Reply from server : " + Chat.RRCMD_ROOMS + " " + rooms);
 		}
 		//Print out the room you joined followed by all of the addresses
 		else if(line[0].equals(Chat.RRCMD_JOIN)){
@@ -84,7 +103,7 @@ public class ServerReceiver extends Thread {
 			//Add IPP's of people in room to listOfClients
 			for(int i=0; i<temp.length; i++){
 				String [] ipp = temp[i].split(":");
-				Client tempClient = new Client(ipp[0],Integer.parseInt(ipp[1]));
+				Client tempClient = new Client(ipp[0],Integer.parseInt(ipp[1]),ipp[2]);
 				findClientAndAdd(tempClient);
 			}
 			//Get IPP pairs from clients 
@@ -93,8 +112,10 @@ public class ServerReceiver extends Thread {
 				result += c.getIPP() + " ";
 			}
 			Chat.setCurrentRoom(room);
+			Chat.setClientsOnListArea();
 			Chat.sendHello = true;
 			System.out.println("Reply from server : " + Chat.RRCMD_JOIN + " " + room + " " + result);
+			Chat.setOutputLine("Reply from server : " + Chat.RRCMD_JOIN + " " + room + " " + result);
 			System.out.print("> ");
 		}
 	}
