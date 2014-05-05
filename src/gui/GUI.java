@@ -46,8 +46,6 @@ public class GUI extends JFrame {
         panel = p;
         getContentPane().add((JPanel) panel);
         pack();
-        revalidate();
-        repaint();
         System.gc();
     }
     
