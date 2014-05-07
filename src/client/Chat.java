@@ -34,8 +34,6 @@ import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.DataLine;
-import javax.sound.sampled.LineUnavailableException;
-import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -151,17 +149,20 @@ public class Chat extends JPanel implements GUIPanel, Runnable{
 	
 	
 	//SOUND METHOD
-	public synchronized static void playSound(final String url) 
-	throws UnsupportedAudioFileException, IOException, LineUnavailableException, InterruptedException {
-		File soundFile = new File("../res/" + url);
-	    AudioInputStream sound = AudioSystem.getAudioInputStream(soundFile);
-
-	    // load the sound into memory (a Clip)
-	    DataLine.Info info = new DataLine.Info(Clip.class, sound.getFormat());
-	    Clip clip = (Clip) AudioSystem.getLine(info);
-	    clip.open(sound);
-	    
-	    clip.start();
+	public synchronized static void playSound(final String url) {
+		
+		//TODO : Find out why sound won't work on Linux
+		try{
+			File soundFile = new File("../res/" + url);
+		    AudioInputStream sound = AudioSystem.getAudioInputStream(soundFile);
+	
+		    // load the sound into memory (a Clip)
+		    DataLine.Info info = new DataLine.Info(Clip.class, sound.getFormat());
+		    Clip clip = (Clip) AudioSystem.getLine(info);
+		    clip.open(sound);
+		    
+		    clip.start();
+		}catch(Exception e){}
 	}
 	
 	//*********************GUI CODE**********************\\

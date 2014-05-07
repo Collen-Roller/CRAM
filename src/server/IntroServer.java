@@ -152,7 +152,8 @@ public class IntroServer {
 	    System.out.println("TCPServer begins " + portNumber);
 
 	    try {
-	      ServerSocket server = new ServerSocket(portNumber);
+	      @SuppressWarnings("resource")
+		ServerSocket server = new ServerSocket(portNumber);
 	      System.out.println("Accepting connections on " + portNumber);
 	      
 	      //keep server socket going always
