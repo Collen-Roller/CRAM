@@ -26,6 +26,7 @@ import java.util.Scanner;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.Semaphore;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -135,6 +136,7 @@ public class Chat extends JPanel implements GUIPanel, Runnable{
 	private Image background;
 	 
 	public static boolean grabCommand;
+	public final static Semaphore sem = new Semaphore(1, true);
 	
 	public static String text;
 	
@@ -167,7 +169,7 @@ public class Chat extends JPanel implements GUIPanel, Runnable{
 	//Basically a constructor to construct submit button / action listeners / ect..
 	public void guiSetUp(){
 		background = Toolkit.getDefaultToolkit().createImage(
-				"../res/Brushed Metal by Miatari (5).jpg");
+				"../res/Brushed Metal by Miatari (5).png");
 		setLayout(null);
 		submit = new JButton("SUBMIT");
 		submit.setLocation(435, 365);
@@ -180,6 +182,7 @@ public class Chat extends JPanel implements GUIPanel, Runnable{
 				text = s;
 				inputArea.setText("");
 				grabCommand = true;
+				sem.release();
 			}
 		});
 			
@@ -265,7 +268,8 @@ public class Chat extends JPanel implements GUIPanel, Runnable{
 		add(consolePane);
 	}
 	
-	public static String getInputLines() {
+	public static String getInputLines() throws InterruptedException {
+		sem.acquire();
 		grabCommand = false;
 		return text;
 	}
@@ -488,11 +492,11 @@ public class Chat extends JPanel implements GUIPanel, Runnable{
 		command = false;
 	}
 	
-	public static void resetCM(){
+	public synchronized static void resetCM(){
 		message = false;
 		command = false;
 	}
-	public static void resetDCM(){
+	public synchronized static void resetDCM(){
 		doubleCommand = false;
 	}
 	
@@ -573,7 +577,14 @@ public class Chat extends JPanel implements GUIPanel, Runnable{
 			cr.start();
 			sr.start();
 
-			while(true) {}
+			while(true) {
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
 		} catch(SocketException e) {
 			System.err.println("Couldn't establish local or distant connection");
 			System.exit(2);

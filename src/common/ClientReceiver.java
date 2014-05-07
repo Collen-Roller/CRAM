@@ -30,7 +30,6 @@ public class ClientReceiver extends Thread {
   @Override public void run() {
     try {
       while (true) {
-    	 
     	  
     	  DatagramPacket packet = new DatagramPacket(receiveData,
     				  receiveData.length);
@@ -76,7 +75,7 @@ public class ClientReceiver extends Thread {
     	  Chat.setOutputLine(formattedResponse);
     	  System.out.print("> ");
     	  Chat.playSound("Chat 3.wav");
-    	  
+    	  Thread.sleep(50);
       }
       
     }catch (Exception e ){

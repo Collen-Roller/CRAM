@@ -79,11 +79,11 @@ How Does the Client Connect to the Server?
 |                | the rooms known to the server. Displays the results for | 
 |----------------+---------------------------------------------------------|
 | \clients <RM>  | Contacts the introduction server and asks for a list of |
-|				 | clients in an existing room, if room doesn't exist the  |
-|				 | server will send back \CLIENTS <RM> with nothing 	   |
+|		 | clients in an existing room, if room doesn't exist the  |
+|		 | server will send back \CLIENTS <RM> with nothing 	   |
 |----------------+---------------------------------------------------------|
 | \join <RM>     | Leave current room, and join a new or existing room     |
-|				 | contacts the introduction server asking for             |
+|		 | contacts the introduction server asking for             |
 |                | a list of room members from the introduction server.    |
 |                | When the reply comes back, HELLO goes out to            | 
 |                | all members of the room other than this peer. Note that |
@@ -92,9 +92,9 @@ How Does the Client Connect to the Server?
 |----------------+---------------------------------------------------------|
 | \leave <RM>    | Leave the given room. Send \EXIT to the server and      |
 |                | sends GOODBYE to all other peers in the room which will |
-|				 | cause each recipient to remove them from their list     |
+|		 | cause each recipient to remove them from their list     |
 |                | and the sender will stop displaying any more messages   |
-|				 | from that room.            							   |
+|		 | from that room.					   |
 |                | The peer should set the current room to the start_room  |
 |                | specified on the command-line. This implies, correctly, |
 |                | that you cannot \leave the start room. Trying should    |

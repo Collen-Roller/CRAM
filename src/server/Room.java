@@ -81,6 +81,16 @@ public class Room {
 	public String getName(){
 		return name;
 	}
+	
+	public boolean contains(String ipp){
+		Iterator<Client> itr = clients.iterator();
+		while(itr.hasNext()){
+			Client c = itr.next();
+			if(c.getIPP().equals(ipp))
+				return true;
+		}
+		return false;
+	}
 
 	public Client getClient(String s, int n) {
 		String ipp = s + ":" + n;

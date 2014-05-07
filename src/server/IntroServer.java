@@ -110,6 +110,7 @@ public class IntroServer {
 		
 	}
 	
+	
 	/**
 	 * Returns the room that corresponds to @param name
 	 * If room does not exist, null is returned;
@@ -129,6 +130,17 @@ public class IntroServer {
 		return null;	
 	}
 	
+	public synchronized static String findRoom(String ipp){
+		Iterator<Room> itr=rooms.iterator();
+		while(itr.hasNext()){
+			Room r = itr.next();
+			if(r.contains(ipp)){
+				return r.getName();
+			}
+		}
+		return "";
+	}
+	
 	
 	/**
 	 * Runs the IntroServer Thread and connects new clients with the executor
@@ -142,7 +154,6 @@ public class IntroServer {
 	    try {
 	      ServerSocket server = new ServerSocket(portNumber);
 	      System.out.println("Accepting connections on " + portNumber);
-
 	      
 	      //keep server socket going always
 	      
@@ -151,8 +162,10 @@ public class IntroServer {
 	      while ((currClient = server.accept()) != null) {
 	    	  executor.execute(new ServerThread(currClient));
 	      }
-	      kill();
-	        
+	      
+	      //Need to find a way to test the connection so that client can be removed if need be
+	      //String ipp = currClient.getLocalAddress().getHostAddress() + ":" + currClient.getLocalPort();
+	      //removeClientFromRoom(findRoom(ipp),currClient.getLocalAddress().getHostAddress(),currClient.getLocalPort());
 	      
 	    } catch (IOException ioe) {
 	    	System.out.println("Could not create a ServerSocket on port " + portNumber);

@@ -137,15 +137,12 @@ public class ServerReceiver extends Thread {
 	 @Override public synchronized void run() {
 		 try {
 			 while (true) {
-		    	 
 				 while(serverIn.hasNextLine()){
 					 parseCommandFromServer(serverIn.nextLine());
 					 Chat.playSound("Chat 2.wav");
 		    	 }
-				 
-		      }
-		      
-		    
+				 Thread.sleep(100);
+			 }
 		  }catch (Exception e){
 			  System.out.println("Problem with Server Receivers run method...");
 		  }

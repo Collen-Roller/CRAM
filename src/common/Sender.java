@@ -133,6 +133,7 @@ public class Sender extends Thread {
    * @param message
    */
   public synchronized void sendMessageToClients(String message){
+	  
 	//Sends Messages to Clients
 	  String info = Chat.getCurrentRoom() + ":" + Chat.getClientName() + ":" + message;
 	  sendData = info.getBytes();
