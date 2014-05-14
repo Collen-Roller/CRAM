@@ -27,7 +27,7 @@ public class ClientReceiver extends Thread {
   }
   
 
-  @Override public void run() {
+  @Override public synchronized void run() {
     try {
       while (true) {
     	  
@@ -75,7 +75,6 @@ public class ClientReceiver extends Thread {
     	  Chat.setOutputLine(formattedResponse);
     	  System.out.print("> ");
     	  Chat.playSound("Chat 3.wav");
-    	  Thread.sleep(50);
       }
       
     }catch (Exception e ){
@@ -91,7 +90,7 @@ public class ClientReceiver extends Thread {
    * @param c - client to test against
    * @return
    */
-  public boolean findClient(Client c){
+  public synchronized boolean findClient(Client c){
  	 for(Client c1 : Chat.listOfClients){
  		 if(c.getIPP().equals(c1.getIPP())){
  			 return true;

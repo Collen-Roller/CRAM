@@ -37,14 +37,8 @@ public class Sender extends Thread {
     try {
 		serverOut = new PrintStream(serverSocket.getOutputStream());
 		sendCommandToServer(Chat.CMD_JOIN + " " + Chat.getCurrentRoom());
-		/*if(Chat.initSendToServerRoom){
-			sendCommandToServer(Chat.CMD_ROOMS);
-		}if(Chat.initSendToServerKill){
-			sendCommandToServer(Chat.RRCMD_KILL);
-		}
-		*/
 	} catch (IOException e) {
-		System.out.println("Can't Set OutPutStream with serverSocket");
+		System.out.println("Can't Set OutputStream with serverSocket");
 	}
     
   }
@@ -56,7 +50,7 @@ public class Sender extends Thread {
    * @throws IOException
  * @throws InterruptedException 
    */
-  public synchronized void sendCommandToServer(String command) throws IOException, InterruptedException{
+  public void sendCommandToServer(String command) throws IOException, InterruptedException{
 		//send server command
 		String [] line = command.split("\\s+");
 
@@ -131,9 +125,9 @@ public class Sender extends Thread {
    * Will send message to the list of clients to send to
    * 
    * @param message
+ * @throws InterruptedException 
    */
-  public synchronized void sendMessageToClients(String message){
-	  
+  public synchronized void sendMessageToClients(String message) throws InterruptedException{
 	//Sends Messages to Clients
 	  String info = Chat.getCurrentRoom() + ":" + Chat.getClientName() + ":" + message;
 	  sendData = info.getBytes();
@@ -146,18 +140,16 @@ public class Sender extends Thread {
 				  sendData.length, c.getInetAddress(), c.getPort());
 		  try {
 			socket.send(packet);
-		} catch (IOException e) {
+		  } catch (IOException e) {
 			System.out.println("Could not send message to " + c.getIPP());
-		}
+		  }
 	  }
-	  
   }
   
   @Override
-  public void run() {
+  public synchronized void run() {
     while (true) {
       try {
-    	  
     	  //Flag to send an Initial message to clients
     	  if(Chat.sendHello){
     		  sendMessageToClients("HELLO I AM YOUR LEADER");
@@ -180,29 +172,16 @@ public class Sender extends Thread {
     		  
     	  }
     	  
-    	  else if(Chat.doubleCommand){
+    	  while(!commandQueue.isEmpty())
     		  sendCommandToServer(commandQueue.take());
-    		  Chat.resetDCM();
-    	  }
     	  
-    	  //Sends Command To Server
-    	  else if(Chat.command){
-    		  sendCommandToServer(commandQueue.take()); 
-    		  Chat.resetCM();
-    	  }
-    	  
-    	  //Sends MEssage to Clients
-    	  else if(Chat.message){
+    	  while(!messageQueue.isEmpty())
     		  sendMessageToClients(messageQueue.take());
-    		  Chat.resetCM();
-    	  }
-
-    	  Thread.sleep(100);
-    	  //Didn't Send Anything
-    	 
+    	 wait(500);
       } catch (Exception e){
     	  System.out.println("Problem sending command to server on client side");
       }
+      
     }
 
   }

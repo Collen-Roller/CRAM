@@ -36,17 +36,17 @@ public class TypingToQueue extends Thread {
     this.commandQueue = commandQueue;
   }
 
-  @Override public void run() {
+  @Override 
+  public synchronized void run() {
     String line;
     System.out.print("> ");
     //while ((line = fin.nextLine()) != null) {
     while(true){
       try {
-    	  
     	  //Need to use a semaphore here
     	  if(Chat.grabCommand){
     		  line = Chat.getInputLines();
-    		  Chat.sem.release();
+    		  //Sender.currentThread().notify();
     	 
 	    	  //if line is "" then skip it
 	    	  if(line.equals(""))
@@ -60,7 +60,6 @@ public class TypingToQueue extends Thread {
 	    		  }else{
 	    			  commandQueue.put("\\leave " + Chat.getCurrentRoom());
 	    			  commandQueue.put(line);
-	    			  Chat.doubleCommand();
 	    		  }
 	    	  }
 	    	  
@@ -76,26 +75,21 @@ public class TypingToQueue extends Thread {
 	    		  }else{
 	    			  commandQueue.put(line);
 	    			  commandQueue.put("\\join " + Chat.DEFAULT_ROOM);
-	    			  Chat.doubleCommand();
 	    		  }
 	    	  }
 	 
 	    	  //Puts Command into Server Command Queue
-	    	  else if(line.contains("\\")){
+	    	  else if(line.contains("\\"))
 	    		  commandQueue.put(line);
-	    		  Chat.command();
-	    	  }
-	    	  
+
 	    	  //Puts Message into message queue
-	    	  else{
+	    	  else
 	    		  messageQueue.put(line);
-	    		  Chat.message();
-	    	  }
-	    	Thread.sleep(100);  
-    	  }
+    	  }else
+    		wait(500);
       } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
+    	  System.out.println("TYPING TO QUEUE EXCEPTION");
       }
-    }
+  	}
   }
 }

@@ -25,8 +25,9 @@ import java.util.Iterator;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.Semaphore;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -115,9 +116,7 @@ public class Chat extends JPanel implements GUIPanel, Runnable{
 	private static Scanner serverIn;
 	private static DatagramSocket socket;
 	
-	public static boolean command = false;
-	public static boolean message = false;
-	public static boolean doubleCommand = false;
+	public static boolean grabCommand;
 	public static boolean sendHello = false;
 	public static boolean sendGoodbye = false;
 	public static boolean sendRename = false;
@@ -132,9 +131,6 @@ public class Chat extends JPanel implements GUIPanel, Runnable{
 	
 	/////////////GUI FIELDS\\\\\\\\\\\\\\\\
 	private Image background;
-	 
-	public static boolean grabCommand;
-	public final static Semaphore sem = new Semaphore(1, true);
 	
 	public static String text;
 	
@@ -146,6 +142,8 @@ public class Chat extends JPanel implements GUIPanel, Runnable{
 	private KeyAdapter a2;
 	
 	private JButton submit;
+	
+	public Executor exec = Executors.newCachedThreadPool();
 	
 	
 	//SOUND METHOD
@@ -183,14 +181,14 @@ public class Chat extends JPanel implements GUIPanel, Runnable{
 				text = s;
 				inputArea.setText("");
 				grabCommand = true;
-				sem.release();
+				notifyAll();
 			}
 		});
 			
 		inputArea.addKeyListener(a2 = new KeyAdapter() {
 			
 			@Override
-	         public synchronized void keyPressed(KeyEvent e) {
+	         public void keyPressed(KeyEvent e) {
 	           int key = e.getKeyCode();
 	           if (key == KeyEvent.VK_ENTER) {
 	        	   submit.doClick();   
@@ -270,7 +268,6 @@ public class Chat extends JPanel implements GUIPanel, Runnable{
 	}
 	
 	public static String getInputLines() throws InterruptedException {
-		sem.acquire();
 		grabCommand = false;
 		return text;
 	}
@@ -286,6 +283,7 @@ public class Chat extends JPanel implements GUIPanel, Runnable{
 			}else{
 				outputArea.append(line.substring(i) + "\n");
 			}
+			outputArea.setCaretPosition(outputArea.getDocument().getLength());
 		}
 	}
 	
@@ -479,29 +477,6 @@ public class Chat extends JPanel implements GUIPanel, Runnable{
 		sendRename = false;
 	}
 	
-	public static void command(){
-		command = true;
-		message = false;
-	}
-	public static void doubleCommand(){
-		doubleCommand = true;
-		command();
-	}
-	
-	public static void message(){
-		message = true;
-		command = false;
-	}
-	
-	public synchronized static void resetCM(){
-		message = false;
-		command = false;
-	}
-	public synchronized static void resetDCM(){
-		doubleCommand = false;
-	}
-	
-	
 	//*************SETTERS AND GETTERS****************\\
 	public static void setClientName(String name){
 		Chat.name = name;
@@ -539,19 +514,18 @@ public class Chat extends JPanel implements GUIPanel, Runnable{
 	 * Sender - Thread to send messages to the clients and the server
 	 * @throws InterruptedException 
 	 */
-	@Override
-	public void run() {
+	public synchronized void run() {
 		
 		// Linked List implementation of a queue for
 		// messages
 		messageQueue = new LinkedBlockingQueue<String>();
 		serverCommandQueue = new LinkedBlockingQueue<String>();
-		
 
 		try {
 			// Reads keyboard information and places it into queue
-			TypingToQueue keyboard = new TypingToQueue(messageQueue, serverCommandQueue);
-			keyboard.start();
+			//TypingToQueue keyboard = new TypingToQueue(messageQueue, serverCommandQueue);
+			//keyboard.start();
+			exec.execute(new TypingToQueue(messageQueue, serverCommandQueue));
 			
 			// Start reader thread
 			socket = new DatagramSocket(localPort);
@@ -564,28 +538,25 @@ public class Chat extends JPanel implements GUIPanel, Runnable{
 				System.exit(2);
 			}
 			
-			ClientReceiver cr = new ClientReceiver(socket);
-			ServerReceiver sr = new ServerReceiver(serverSocket, serverIn);
-			Sender sender;
+			//ClientReceiver cr = new ClientReceiver(socket);
+			//ServerReceiver sr = new ServerReceiver(serverSocket, serverIn);
+			//Sender sender;
 			try {
-				sender = new Sender(socket, serverSocket, serverOut, messageQueue, serverCommandQueue);
-				sender.start();
+				//sender = new Sender(socket, serverSocket, serverOut, messageQueue, serverCommandQueue);
+				//sender.start();
+				exec.execute(new Sender(socket, serverSocket, serverOut, messageQueue, serverCommandQueue));
 			} catch (InterruptedException e) {
 				System.out.println("Can't invoke sender thread....re-run");
 				System.out.println("If no luck... then contact me");
 			}
 
-			cr.start();
-			sr.start();
+			//cr.start();
+			//sr.start();
+			exec.execute(new ClientReceiver(socket));
+			exec.execute(new ServerReceiver(serverSocket, serverIn));
 
-			while(true) {
-				try {
-					Thread.sleep(100);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
+			//while(true) {}
+			
 		} catch(SocketException e) {
 			System.err.println("Couldn't establish local or distant connection");
 			System.exit(2);

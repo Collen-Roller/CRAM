@@ -29,7 +29,7 @@ public class ServerReceiver extends Thread {
 	 * @throws InterruptedException 
 	 */
 		
-	public void parseCommandFromServer(String reply) throws InterruptedException{
+	public synchronized void parseCommandFromServer(String reply) throws InterruptedException{
 		String line [] = reply.split("\\s+");
 		Chat.setOutputLine(reply);
 		//Kills the Server
@@ -59,23 +59,19 @@ public class ServerReceiver extends Thread {
 		
 		//Exits the Room
 		else if(line[0].equals(Chat.RRCMD_EXIT)){
-			long time = 100;
 			String room = line[1];
 			Chat.sendGoodbye = true;
-			Thread.sleep(time); //Sleep to allow the Goodbye to be sent 
 			System.out.println("Reply from server : " + Chat.RRCMD_EXIT + " " + room);
 			Chat.setOutputLine("Reply from server : " + Chat.RRCMD_EXIT + " " + room);
 			Chat.setClientsOnListArea();
 		}
 		
 		else if(line[0].equals(Chat.RRCMD_RENAME)){
-			long time = 100;
 			String oldName = line[1];
 			String newName = line[2];
 			Chat.setClientName(newName);
 			Chat.setClientsOnListArea();
 			Chat.sendRename = true;
-			Thread.sleep(time);
 			System.out.println("Reply from server : " + Chat.RRCMD_RENAME+ " " + oldName + " to " + newName);
 			Chat.setOutputLine("Reply from server : " + Chat.RRCMD_RENAME + " "  + oldName + " to " + newName);
 		}
@@ -124,7 +120,7 @@ public class ServerReceiver extends Thread {
 	 * 
 	 * @param c
 	 */
-	public void findClientAndAdd(Client c){
+	public synchronized void findClientAndAdd(Client c){
 	 	for(Client c1 : Chat.listOfClients){
 	 		if(c.getIPP().equals(c1.getIPP())){
 	 			return;
@@ -134,14 +130,14 @@ public class ServerReceiver extends Thread {
 	 	Chat.listOfClients.add(c);
 	}
 	
-	 @Override public synchronized void run() {
+	 @Override 
+	 public synchronized void run() {
 		 try {
 			 while (true) {
-				 while(serverIn.hasNextLine()){
+				 if(serverIn.hasNextLine()){
 					 parseCommandFromServer(serverIn.nextLine());
 					 Chat.playSound("Chat 2.wav");
-		    	 }
-				 Thread.sleep(100);
+		    	 } 
 			 }
 		  }catch (Exception e){
 			  System.out.println("Problem with Server Receivers run method...");
