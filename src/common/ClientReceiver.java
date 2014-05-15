@@ -27,7 +27,7 @@ public class ClientReceiver extends Thread {
   }
   
 
-  @Override public synchronized void run() {
+  @Override public void run() {
     try {
       while (true) {
     	  

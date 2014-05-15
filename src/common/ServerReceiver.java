@@ -61,6 +61,9 @@ public class ServerReceiver extends Thread {
 		else if(line[0].equals(Chat.RRCMD_EXIT)){
 			String room = line[1];
 			Chat.sendGoodbye = true;
+			synchronized(Chat.sender){
+				Chat.sender.notify();
+			}
 			System.out.println("Reply from server : " + Chat.RRCMD_EXIT + " " + room);
 			Chat.setOutputLine("Reply from server : " + Chat.RRCMD_EXIT + " " + room);
 			Chat.setClientsOnListArea();
@@ -72,6 +75,9 @@ public class ServerReceiver extends Thread {
 			Chat.setClientName(newName);
 			Chat.setClientsOnListArea();
 			Chat.sendRename = true;
+			synchronized(Chat.sender){
+				Chat.sender.notify();
+			}
 			System.out.println("Reply from server : " + Chat.RRCMD_RENAME+ " " + oldName + " to " + newName);
 			Chat.setOutputLine("Reply from server : " + Chat.RRCMD_RENAME + " "  + oldName + " to " + newName);
 		}
@@ -110,6 +116,9 @@ public class ServerReceiver extends Thread {
 			Chat.setCurrentRoom(room);
 			Chat.setClientsOnListArea();
 			Chat.sendHello = true;
+			synchronized(Chat.sender){
+				Chat.sender.notify();
+			}
 			System.out.println("Reply from server : " + Chat.RRCMD_JOIN + " " + room + " " + result);
 			Chat.setOutputLine("Reply from server : " + Chat.RRCMD_JOIN + " " + room + " " + result);
 			System.out.print("> ");
@@ -120,7 +129,7 @@ public class ServerReceiver extends Thread {
 	 * 
 	 * @param c
 	 */
-	public synchronized void findClientAndAdd(Client c){
+	public void findClientAndAdd(Client c){
 	 	for(Client c1 : Chat.listOfClients){
 	 		if(c.getIPP().equals(c1.getIPP())){
 	 			return;
@@ -131,7 +140,7 @@ public class ServerReceiver extends Thread {
 	}
 	
 	 @Override 
-	 public synchronized void run() {
+	 public void run() {
 		 try {
 			 while (true) {
 				 if(serverIn.hasNextLine()){

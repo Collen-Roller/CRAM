@@ -127,7 +127,7 @@ public class Sender extends Thread {
    * @param message
  * @throws InterruptedException 
    */
-  public synchronized void sendMessageToClients(String message) throws InterruptedException{
+  public void sendMessageToClients(String message) throws InterruptedException{
 	//Sends Messages to Clients
 	  String info = Chat.getCurrentRoom() + ":" + Chat.getClientName() + ":" + message;
 	  sendData = info.getBytes();
@@ -147,40 +147,44 @@ public class Sender extends Thread {
   }
   
   @Override
-  public synchronized void run() {
+  public void run() {
     while (true) {
-      try {
-    	  //Flag to send an Initial message to clients
-    	  if(Chat.sendHello){
-    		  sendMessageToClients("HELLO I AM YOUR LEADER");
-    		  Chat.resetHello();
-    	  }
-    	  
-    	  else if(Chat.sendRename){
-    		  sendMessageToClients("RENAME");
-    		  Chat.resetRename();
-    	  }
-    	  
-    	  //Flag so that when a client leaves a room, the other clients wont receive
-    	  //Messages from them anymore
-    	  else if(Chat.sendGoodbye){
-    		  sendMessageToClients("GOODBYE");
-    		  Chat.resetGoodbye();
-    		  Chat.resetHello();
-    		  Chat.removeCurrentClients();
-    		  Chat.setCurrentRoom("none");
-    		  
-    	  }
-    	  
-    	  while(!commandQueue.isEmpty())
-    		  sendCommandToServer(commandQueue.take());
-    	  
-    	  while(!messageQueue.isEmpty())
-    		  sendMessageToClients(messageQueue.take());
-    	 wait(500);
-      } catch (Exception e){
-    	  System.out.println("Problem sending command to server on client side");
-      }
+	      try {
+	    	  System.out.println("SENDER RESTARTED");
+	    	  //Flag to send an Initial message to clients
+	    	  if(Chat.sendHello){
+	    		  sendMessageToClients("HELLO I AM YOUR LEADER");
+	    		  Chat.resetHello();
+	    	  }
+	    	  
+	    	  else if(Chat.sendRename){
+	    		  sendMessageToClients("RENAME");
+	    		  Chat.resetRename();
+	    	  }
+	    	  
+	    	  //Flag so that when a client leaves a room, the other clients wont receive
+	    	  //Messages from them anymore
+	    	  else if(Chat.sendGoodbye){
+	    		  sendMessageToClients("GOODBYE");
+	    		  Chat.resetGoodbye();
+	    		  Chat.resetHello();
+	    		  Chat.removeCurrentClients();
+	    		  Chat.setCurrentRoom("none");
+	    		  
+	    	  }
+	    	  
+	    	  while(!commandQueue.isEmpty())
+	    		  sendCommandToServer(commandQueue.take());
+	    	  
+	    	  while(!messageQueue.isEmpty())
+	    		  sendMessageToClients(messageQueue.take());
+	    	  synchronized(this){
+	    		  wait();
+	    	  }
+	      } catch (Exception e){
+	    	  System.out.println("Problem sending command to server on client side");
+	      }
+      
       
     }
 

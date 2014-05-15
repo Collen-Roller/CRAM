@@ -25,8 +25,6 @@ import java.util.Iterator;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -64,6 +62,12 @@ import common.TypingToQueue;
 
 @SuppressWarnings("serial")
 public class Chat extends JPanel implements GUIPanel, Runnable{
+	
+	//Threads 
+	TypingToQueue keyboard;
+	ClientReceiver cr;
+	ServerReceiver sr;
+	public static Sender sender = null;
 	
 	
 	//COMMANDS & DEFAULT INFO
@@ -143,9 +147,6 @@ public class Chat extends JPanel implements GUIPanel, Runnable{
 	
 	private JButton submit;
 	
-	public Executor exec = Executors.newCachedThreadPool();
-	
-	
 	//SOUND METHOD
 	public synchronized static void playSound(final String url) {
 		
@@ -181,7 +182,9 @@ public class Chat extends JPanel implements GUIPanel, Runnable{
 				text = s;
 				inputArea.setText("");
 				grabCommand = true;
-				notifyAll();
+				synchronized(keyboard){
+					keyboard.notify();
+				}
 			}
 		});
 			
@@ -514,19 +517,15 @@ public class Chat extends JPanel implements GUIPanel, Runnable{
 	 * Sender - Thread to send messages to the clients and the server
 	 * @throws InterruptedException 
 	 */
-	public synchronized void run() {
-		
+	public void run() {
 		// Linked List implementation of a queue for
 		// messages
 		messageQueue = new LinkedBlockingQueue<String>();
 		serverCommandQueue = new LinkedBlockingQueue<String>();
 
 		try {
-			// Reads keyboard information and places it into queue
-			//TypingToQueue keyboard = new TypingToQueue(messageQueue, serverCommandQueue);
-			//keyboard.start();
-			exec.execute(new TypingToQueue(messageQueue, serverCommandQueue));
-			
+			keyboard = new TypingToQueue(messageQueue, serverCommandQueue);
+			keyboard.start();
 			// Start reader thread
 			socket = new DatagramSocket(localPort);
 			try {
@@ -538,24 +537,18 @@ public class Chat extends JPanel implements GUIPanel, Runnable{
 				System.exit(2);
 			}
 			
-			//ClientReceiver cr = new ClientReceiver(socket);
-			//ServerReceiver sr = new ServerReceiver(serverSocket, serverIn);
-			//Sender sender;
+			cr = new ClientReceiver(socket);
+			sr = new ServerReceiver(serverSocket, serverIn);
 			try {
-				//sender = new Sender(socket, serverSocket, serverOut, messageQueue, serverCommandQueue);
-				//sender.start();
-				exec.execute(new Sender(socket, serverSocket, serverOut, messageQueue, serverCommandQueue));
+				sender = new Sender(socket, serverSocket, serverOut, messageQueue, serverCommandQueue);
+				sender.start();
 			} catch (InterruptedException e) {
 				System.out.println("Can't invoke sender thread....re-run");
 				System.out.println("If no luck... then contact me");
 			}
 
-			//cr.start();
-			//sr.start();
-			exec.execute(new ClientReceiver(socket));
-			exec.execute(new ServerReceiver(serverSocket, serverIn));
-
-			//while(true) {}
+			cr.start();
+			sr.start();
 			
 		} catch(SocketException e) {
 			System.err.println("Couldn't establish local or distant connection");
