@@ -102,4 +102,10 @@ This peer runs \leave for the current room and then terminate
 
 ###\kill
 
-Send \KILL to the introduction server and terminate.
+Send \KILL to the introduction server and terminate
+
+##Accreditation
+
+Written by [Collen Roller][1]
+
+[1]: https://github.com/collen-roller
