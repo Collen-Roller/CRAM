@@ -17,20 +17,20 @@ so that other clients can connect to the server and send commands.
 
 Command List
 
-\JOIN <RM> <IPP>    	:	 Introduction/join room request
-\JOIN <RM> (<IPP>)+ 	:	 Room member response; includes the member joining
+	\JOIN <RM> <IPP>    	:	 Introduction/join room request
+	\JOIN <RM> (<IPP>)+ 	:	 Room member response; includes the member joining
 
-\ROOMS              	:	 List of active rooms request
-\ROOMS (<RM>)+      	:	 Room list response; all non-empty rooms
+	\ROOMS              	:	 List of active rooms request
+	\ROOMS (<RM>)+      	:	 Room list response; all non-empty rooms
 
-\EXIT <RM> <IPP>    	:	 Leave room request
-\EXIT  <RM>         	:	 Room client left, leaving a non-existent room or a room the client is not in is NOT AN ERROR
+	\EXIT <RM> <IPP>    	:	 Leave room request
+	\EXIT  <RM>         	:	 Room client left, leaving a non-existent room or a room the client is not in is NOT AN ERROR
 
-\KILL               	:	 Server kill command
-\KILL               	:	 Server kill response, server terminates after sending this response
+	\KILL               	:	 Server kill command
+	\KILL               	:	 Server kill response, server terminates after sending this response
 
-\CLIENTS <RM>       	:	 List of active clients in room request
-\CLIENTS (<IPP>)+   	:	 Clients response; list of all clients in room
+	\CLIENTS <RM>       	:	 List of active clients in room request
+	\CLIENTS (<IPP>)+   	:	 Clients response; list of all clients in room
 
 Each command thats parsed by the server will send back some information, which is
 the second listing of each command.
@@ -68,40 +68,25 @@ specific port specified in the IntroPanel
 	 
 How Does the Client Connect to the Server?
 
-|----------------+---------------------------------------------------------|
-| Command Syntax | Semantics                                               |
-|----------------+---------------------------------------------------------|
-| \rooms         | Contacts the introduction server and asks for a list of |
-|                | the rooms known to the server. Displays the results for | 
-|----------------+---------------------------------------------------------|
-| \clients <RM>  | Contacts the introduction server and asks for a list of |
-|		 | clients in an existing room, if room doesn't exist the  |
-|		 | server will send back \CLIENTS <RM> with nothing 	   |
-|----------------+---------------------------------------------------------|
-| \join <RM>     | Leave current room, and join a new or existing room     |
-|		 | contacts the introduction server asking for             |
-|                | a list of room members from the introduction server.    |
-|                | When the reply comes back, HELLO goes out to            | 
-|                | all members of the room other than this peer. Note that |
-|                | this request results in the creation of a new room if   |
-|                | the server has never heard of it.                       |
-|----------------+---------------------------------------------------------|
-| \leave <RM>    | Leave the given room. Send \EXIT to the server and      |
-|                | sends GOODBYE to all other peers in the room which will |
-|		 | cause each recipient to remove them from their list     |
-|                | and the sender will stop displaying any more messages   |
-|		 | from that room.					   |
-|                | The peer should set the current room to the start_room  |
-|                | specified on the command-line. This implies, correctly, |
-|                | that you cannot \leave the start room. Trying should    |
-|                | give a reasonable error message.                        |
-|----------------+---------------------------------------------------------|
-| \name <NM>     | Set <NM> to be the "handle" used by this peer in front  |
-|                | of all messages sent until it is reset. A message will  |
-|                | send to all clients in room that clients name changed.  |
-|----------------+---------------------------------------------------------|
-| \quit          | This peer runs \leave for the current room and then	   |
-|                | terminate.                                              |
-|----------------+---------------------------------------------------------|
-| \kill          | Send \KILL to the introduction server and terminate.    |
-|----------------+---------------------------------------------------------|
+#\rooms      		
+	Contacts the introduction server and asks for a list of the rooms known to the server. Displays the results for 
+\clients <RM> 
+	Contacts the introduction server and asks for a list of clients in an existing room, if room doesn't exist the 
+	server will send back \CLIENTS <RM> with nothing
+\join <RM>     
+	Leave current room, and join a new or existing room contacts the introduction server asking for
+	a list of room members from the introduction server When the reply comes back, HELLO goes out to
+        all members of the room other than this peer. Note that this request results in the creation of a new room if
+        the server has never heard of it
+\leave <RM>    
+	Leave the given room. Send \EXIT to the server and sends GOODBYE to all other peers in the room which will
+	cause each recipient to remove them from their list and the sender will stop displaying any more messages
+	from that room. The peer should set the current room to the start_room specified on the command-line. 
+	This implies, correctly, that you cannot \leave the start room. Trying should give a reasonable error message
+\name <NM>
+	Set <NM> to be the "handle" used by this peer in front of all messages sent until it is reset. A message will
+	send to all clients in room that clients name changed
+\quit
+	This peer runs \leave for the current room and then terminate
+\kill
+	Send \KILL to the introduction server and terminate.
