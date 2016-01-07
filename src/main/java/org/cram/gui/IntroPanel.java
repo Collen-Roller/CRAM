@@ -1,6 +1,6 @@
-package gui;
+package org.cram.gui;
 
-import interfaces.GUIPanel;
+import org.cram.interfaces.GUIPanel;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -19,8 +19,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import client.Chat;
-import client.ChatMain;
+import org.cram.client.Chat;
+import org.cram.client.ChatMain;
 
 /**
  * IntroPanel's purpose is to grab information for the chat program
@@ -71,7 +71,7 @@ public class IntroPanel extends JPanel implements GUIPanel{
 	public IntroPanel() throws IOException{
 		
 		background = Toolkit.getDefaultToolkit().createImage(
-				"res/Brushed Metal by Miatari (5).png");
+				"src/main/resources/Brushed Metal by Miatari (5).png");
 		
 		submit = new JButton("SUBMIT");
 		submit.setLocation(250, 375);

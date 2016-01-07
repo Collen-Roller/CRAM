@@ -1,4 +1,4 @@
-package interfaces;
+package org.cram.interfaces;
 
 public interface GUIPanel {
 

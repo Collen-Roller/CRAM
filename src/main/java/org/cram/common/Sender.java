@@ -1,4 +1,4 @@
-package common;
+package org.cram.common;
 
 
 
@@ -10,7 +10,7 @@ import java.net.Socket;
 import java.util.Iterator;
 import java.util.concurrent.BlockingQueue;
 
-import client.Chat;
+import org.cram.client.Chat;
 
 
 /**

@@ -1,11 +1,11 @@
-package common;
+package org.cram.common;
 
 
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Scanner;
 
-import client.Chat;
+import org.cram.client.Chat;
 
 public class ServerReceiver extends Thread {
 	

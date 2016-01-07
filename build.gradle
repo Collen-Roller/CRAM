@@ -1,0 +1,3 @@
+apply plugin: "java"
+archivesBaseName = "cram"
+version = '1.0-FINAL'

@@ -1,8 +1,8 @@
-package common;
+package org.cram.common;
 
 import java.util.concurrent.BlockingQueue;
 
-import client.Chat;
+import org.cram.client.Chat;
 
 /**
  * This class prepares incoming messages to be sent out

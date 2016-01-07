@@ -1,10 +1,10 @@
-package common;
+package org.cram.common;
 
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 
-import client.Chat;
+import org.cram.client.Chat;
 
 /**
  * 

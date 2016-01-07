@@ -1,4 +1,4 @@
-package common;
+package org.cram.common;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;

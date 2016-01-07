@@ -1,8 +1,8 @@
-package client;
+package org.cram.client;
 
 import java.io.IOException;
 
-import gui.GUI;
+import org.cram.gui.GUI;
 
 
 /**

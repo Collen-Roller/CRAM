@@ -1,4 +1,4 @@
-package server;
+package org.cram.server;
 
 import java.io.IOException;
 import java.io.PrintStream;

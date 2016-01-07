@@ -1,10 +1,10 @@
-package server;
+package org.cram.server;
 
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import common.Client;
+import org.cram.common.Client;
 
 /**
  * Room class to hold a set of clients

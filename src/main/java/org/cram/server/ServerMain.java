@@ -1,4 +1,4 @@
-package server;
+package org.cram.server;
 
 /**
  * Main to invoke the TCP IntroServer on a specific port #

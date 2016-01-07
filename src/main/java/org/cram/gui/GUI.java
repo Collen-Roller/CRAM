@@ -1,6 +1,6 @@
-package gui;
+package org.cram.gui;
 
-import interfaces.GUIPanel;
+import org.cram.interfaces.GUIPanel;
 
 import java.awt.Dimension;
 import java.awt.Toolkit;

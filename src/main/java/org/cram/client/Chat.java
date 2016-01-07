@@ -1,7 +1,7 @@
-package client;
+package org.cram.client;
 
 
-import interfaces.GUIPanel;
+import org.cram.interfaces.GUIPanel;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -40,11 +40,11 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
-import common.Client;
-import common.ClientReceiver;
-import common.Sender;
-import common.ServerReceiver;
-import common.TypingToQueue;
+import org.cram.common.Client;
+import org.cram.common.ClientReceiver;
+import org.cram.common.Sender;
+import org.cram.common.ServerReceiver;
+import org.cram.common.TypingToQueue;
 
 
 /**
@@ -152,7 +152,7 @@ public class Chat extends JPanel implements GUIPanel, Runnable{
 		
 		//TODO : Find out why sound won't work on Linux
 		try{
-			File soundFile = new File("res/" + url);
+			File soundFile = new File("src/main/resources/" + url);
 		    AudioInputStream sound = AudioSystem.getAudioInputStream(soundFile);
 	
 		    // load the sound into memory (a Clip)
@@ -169,7 +169,7 @@ public class Chat extends JPanel implements GUIPanel, Runnable{
 	//Basically a constructor to construct submit button / action listeners / ect..
 	public void guiSetUp(){
 		background = Toolkit.getDefaultToolkit().createImage(
-				"res/Brushed Metal by Miatari (5).png");
+				"src/main/resources/Brushed Metal by Miatari (5).png");
 		setLayout(null);
 		submit = new JButton("SUBMIT");
 		submit.setLocation(435, 365);
