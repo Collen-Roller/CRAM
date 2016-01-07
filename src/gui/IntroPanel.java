@@ -71,7 +71,7 @@ public class IntroPanel extends JPanel implements GUIPanel{
 	public IntroPanel() throws IOException{
 		
 		background = Toolkit.getDefaultToolkit().createImage(
-				"../res/Brushed Metal by Miatari (5).png");
+				"res/Brushed Metal by Miatari (5).png");
 		
 		submit = new JButton("SUBMIT");
 		submit.setLocation(250, 375);

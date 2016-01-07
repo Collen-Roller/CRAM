@@ -152,7 +152,7 @@ public class Chat extends JPanel implements GUIPanel, Runnable{
 		
 		//TODO : Find out why sound won't work on Linux
 		try{
-			File soundFile = new File("../res/" + url);
+			File soundFile = new File("res/" + url);
 		    AudioInputStream sound = AudioSystem.getAudioInputStream(soundFile);
 	
 		    // load the sound into memory (a Clip)
@@ -169,7 +169,7 @@ public class Chat extends JPanel implements GUIPanel, Runnable{
 	//Basically a constructor to construct submit button / action listeners / ect..
 	public void guiSetUp(){
 		background = Toolkit.getDefaultToolkit().createImage(
-				"../res/Brushed Metal by Miatari (5).png");
+				"res/Brushed Metal by Miatari (5).png");
 		setLayout(null);
 		submit = new JButton("SUBMIT");
 		submit.setLocation(435, 365);
