@@ -4,6 +4,7 @@
 
 **Version:** 1.0
 
+Messaging Client
 Peer-to-Peer UDP Chat & TCP Server
 
 ##Description
