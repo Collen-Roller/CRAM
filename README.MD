@@ -1,4 +1,4 @@
-#CRAM
+# CRAM
 
 [![Build Status](https://travis-ci.org/Collen-Roller/CRAM.svg?branch=master)](https://travis-ci.org/Collen-Roller/CRAM)
 
