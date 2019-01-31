@@ -40,7 +40,7 @@ Command List
 Each command thats parsed by the server will send back some information, which is
 the second listing of each command.
 
-##Running The Server
+## Running The Server
 
 1) Compile the ServerMain as well as ServerThread from inside the src directory
 
