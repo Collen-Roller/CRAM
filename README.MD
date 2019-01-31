@@ -7,13 +7,13 @@
 Messaging Client
 Peer-to-Peer UDP Chat & TCP Server
 
-##Description
+## Description
 
 This piece of software was written for an undergraduate Computer Networks course.
 The initial assignment sparked my interest to create graphics for the project which
 eventually led to the birth of CRAM (Collen Roller's Awesome Messenger)
 
-##The Server (TCP)
+## The Server (TCP)
 
 The Server runs on a specified port and listens for connections to be made. 
 ServerMain runs and creates a new instance of IntroServer which holds a set of rooms 
@@ -53,13 +53,13 @@ he argument that is expected is the port number
 	$ java server/ServerMain --port <port>"
 
 
-##The Client (UDP)
+## The Client (UDP)
 
 The Client attempts to connect to the server using a IPP, and is added to a room,
 (lobby, if other not specified in args) using a default port of 21212 or a 
 specific port specified in the IntroPanel
 
-##Running The Client
+## Running The Client
 
 1) Compile the client from inside the src directory
 
@@ -69,47 +69,47 @@ specific port specified in the IntroPanel
 
 	"java client/ChatMain"
 					
-##List of Client Commands
+#### List of Client Commands
 	 
 How Does the Client Connect to the Server?
 
-###\rooms
+##### \rooms
       		
 Contacts the introduction server and asks for a list of the rooms known to the server. Displays the results for 
 
-###\clients <RM> 
+##### \clients <RM> 
 
 Contacts the introduction server and asks for a list of clients in an existing room, if room doesn't exist the 
 server will send back \CLIENTS <RM> with nothing
 
-###\join <RM>     
+##### \join <RM>     
 
 Leave current room, and join a new or existing room contacts the introduction server asking for
 a list of room members from the introduction server When the reply comes back, HELLO goes out to
 all members of the room other than this peer. Note that this request results in the creation of a new room if
 the server has never heard of it
 
-###\leave <RM>    
+##### \leave <RM>    
 
 Leave the given room. Send \EXIT to the server and sends GOODBYE to all other peers in the room which will
 cause each recipient to remove them from their list and the sender will stop displaying any more messages
 from that room. The peer should set the current room to the start_room specified on the command-line. 
 This implies, correctly, that you cannot \leave the start room. Trying should give a reasonable error message
 
-###\name <NM>
+##### \name <NM>
 
 Set <NM> to be the "handle" used by this peer in front of all messages sent until it is reset. A message will
 send to all clients in room that clients name changed
 
-###\quit
+##### \quit
 
 This peer runs \leave for the current room and then terminate
 
-###\kill
+##### \kill
 
 Send \KILL to the introduction server and terminate
 
-##Accreditation
+### Accreditation
 
 Written by [Collen Roller][1]
 
